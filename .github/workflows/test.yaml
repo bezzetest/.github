@@ -11,6 +11,8 @@ defaults:
 jobs:
   merge:
     runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.important.outputs.status }}
     steps:
 
       - name: Git checkout
@@ -39,3 +41,14 @@ jobs:
         run: |
           echo "This ran"
           echo "$COMMITS"
+          echo "status=good" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: merge
+    runs-on: ubuntu-latest
+    if: ${{ needs.merge.outputs.status == 'good' }}
+
+    steps:
+      - name: do something
+        run: |
+          echo "deploying..."
