@@ -11,6 +11,8 @@ defaults:
 jobs:
   merge:
     runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.important.outputs.status }}
     steps:
 
       - name: Git checkout
@@ -28,8 +30,8 @@ jobs:
           LAST_STAGING_TS=$(git log -n 1 --pretty=format:"%h%x09%ct%x09%s" origin/staging | awk '{print $2}')
           COMMITS="$(git log --pretty=format:'%h%x09%cI%x09%s' --since=format:ct:$LAST_STAGING_TS origin/main)"
           COMMITS="${COMMITS//$'\n'/'%0A'}"
-          echo "::set-output name=commits::$COMMITS"
-          # echo "commits=$COMMITS" >> $GITHUB_OUTPUT
+          # echo "::set-output name=commits::$COMMITS"
+          echo "commits=$COMMITS" >> $GITHUB_OUTPUT
 
       - name: important step
         id: important
@@ -39,3 +41,14 @@ jobs:
         run: |
           echo "This ran"
           echo "$COMMITS"
+          echo "status=good" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: merge
+    runs-on: ubuntu-latest
+    if: ${{ needs.merge.outputs.status == 'good' }}
+
+    steps:
+      - name: do something
+        run: |
+          echo "deploying..."
