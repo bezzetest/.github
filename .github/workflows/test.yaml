@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  # Allows for manual triggering through api
+  workflow_dispatch:
+
+defaults:
+    run:
+      shell: bash
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+
+      - name: git
+        id: git-setup
+        run: |
+          git --version
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          git status
+          LAST_STAGING_TS=$(git log -n 1 --pretty=format:"%h%x09%ct%x09%s" origin/staging | awk '{print $2}')
+          COMMITS="$(git log --pretty=format:'%h%x09%cI%x09%s' --since=format:ct:$LAST_STAGING_TS origin/main)"
+          COMMITS="${COMMITS//$'\n'/'%0A'}"
+          echo "::set-output name=commits::$COMMITS"
+          # echo "commits=$COMMITS" >> $GITHUB_OUTPUT
+
+      - name: important step
+        id: important
+        if: ${{ steps.git-setup.outputs.commits != '' }}
+        run: |
+          echo "This ran"
