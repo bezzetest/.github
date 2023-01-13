@@ -35,7 +35,7 @@ jobs:
         id: important
         if: ${{ steps.git-setup.outputs.commits != '' }}
         env:
-          COMMITS=${{ steps.git-setup.outputs.commits }}
+          COMMITS: ${{ steps.git-setup.outputs.commits }}
         run: |
           echo "This ran"
           echo "$COMMITS"
