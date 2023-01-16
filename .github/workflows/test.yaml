@@ -30,11 +30,11 @@ jobs:
           LAST_STAGING_TS=$(git log -n 1 --pretty=format:"%h%x09%ct%x09%s" origin/staging | awk '{print $2}')
           COMMITS="$(git log --pretty=format:'%h%x09%cI%x09%s' --since=format:ct:$LAST_STAGING_TS origin/main)"
           COMMITS_E="${COMMITS//$'\n'/'%0A'}"
-          REPO_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          COMMIT_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit"
           echo "::set-output name=commits::$COMMITS_E"
           echo "::set-output name=commits_old::$COMMITS_E"
           echo "COMMITS_SUM<<EOF" >> $GITHUB_ENV
-          echo "$COMMITS" | sed "s/^\([[:alnum:]]\{7\}\)/* [\1](${REPO_URL//\//\\/}\/\1)/" >> $GITHUB_ENV
+          echo "$COMMITS" | sed "s/^\([[:alnum:]]\{7\}\)/* [\1](${COMMIT_URL//\//\\/}\/\1)/" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: important step
