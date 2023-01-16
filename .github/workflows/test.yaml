@@ -43,7 +43,6 @@ jobs:
           COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
         run: |
           echo "This ran"
-          echo "old $COMMITS_OLD"
           echo "new $COMMITS_NEW"
           echo "status=good" >> $GITHUB_OUTPUT
           git checkout staging
@@ -69,11 +68,6 @@ jobs:
           COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
         run: |
           echo "### Summary" >> $GITHUB_STEP_SUMMARY
-          echo "----" >> $GITHUB_STEP_SUMMARY
-          echo "#### OLD" >> $GITHUB_STEP_SUMMARY
-          echo "$COMMITS_OLD" >> $GITHUB_STEP_SUMMARY
-          echo "----" >> $GITHUB_STEP_SUMMARY
-          echo "#### NEW" >> $GITHUB_STEP_SUMMARY
           echo "$COMMITS_NEW" >> $GITHUB_STEP_SUMMARY
 
   deploy:
