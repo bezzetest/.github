@@ -30,18 +30,35 @@ jobs:
           LAST_STAGING_TS=$(git log -n 1 --pretty=format:"%h%x09%ct%x09%s" origin/staging | awk '{print $2}')
           COMMITS="$(git log --pretty=format:'%h%x09%cI%x09%s' --since=format:ct:$LAST_STAGING_TS origin/main)"
           COMMITS="${COMMITS//$'\n'/'%0A'}"
-          # echo "::set-output name=commits::$COMMITS"
-          echo "commits=$COMMITS" >> $GITHUB_OUTPUT
+          echo "::set-output name=commits_old::$COMMITS"
+          echo "commits_new=$COMMITS" >> $GITHUB_OUTPUT
 
       - name: important step
         id: important
         if: ${{ steps.git-setup.outputs.commits != '' }}
         env:
-          COMMITS: ${{ steps.git-setup.outputs.commits }}
+          COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
+          COMMITS_NEW: ${{ steps.git-setup.outputs.commits_new }}
         run: |
           echo "This ran"
-          echo "$COMMITS"
+          echo "old $COMMITS_OLD"
+          echo "new $COMMITS_NEW"
           echo "status=good" >> $GITHUB_OUTPUT
+          git checkout staging
+          git branch merge/staging
+          git checkout main
+          git merge -m "Merge branch 'merge/staging' into main" -s ours merge/staging
+          git checkout merge/staging
+          git merge --commit main
+          git checkout staging
+          git checkout -b staging_new
+          git merge --squash merge/staging
+          git commit -m "Automated release candidate NEW" -m "$COMMITS_NEW"
+          git log -n 1
+          git checkout staging
+          git merge --squash merge/staging
+          git commit -m "Automated release candidate OLD" -m "$COMMITS_OLD"
+          git log -n 1
 
   deploy:
     needs: merge
