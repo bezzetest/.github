@@ -32,7 +32,7 @@ jobs:
           COMMITS="${COMMITS//$'\n'/'%0A'}"
           echo "::set-output name=commits::$COMMITS"
           echo "::set-output name=commits_old::$COMMITS"
-          echo "commits_new=$COMMITS" >> $GITHUB_ENV
+          echo "COMMITS_NEW=$COMMITS" >> $GITHUB_ENV
 
       - name: important step
         id: important
