@@ -30,15 +30,13 @@ jobs:
           LAST_STAGING_TS=$(git log -n 1 --pretty=format:"%h%x09%ct%x09%s" origin/staging | awk '{print $2}')
           COMMITS="$(git log --pretty=format:'%h%x09%cI%x09%s' --since=format:ct:$LAST_STAGING_TS origin/main)"
           COMMITS="${COMMITS//$'\n'/'%0A'}"
-          echo "::set-output name=commits_old::$COMMITS"
-          echo "commits_new=$COMMITS" >> $GITHUB_OUTPUT
+          echo "::set-output name=commits::$COMMITS"
+          echo "::set-env name=commits_old::$COMMITS"
+          echo "commits_new=$COMMITS" >> $GITHUB_ENV
 
       - name: important step
         id: important
         if: ${{ steps.git-setup.outputs.commits != '' }}
-        env:
-          COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
-          COMMITS_NEW: ${{ steps.git-setup.outputs.commits_new }}
         run: |
           echo "This ran"
           echo "old $COMMITS_OLD"
@@ -59,6 +57,17 @@ jobs:
           git merge --squash merge/staging
           git commit -m "Automated release candidate OLD" -m "$COMMITS_OLD"
           git log -n 1
+
+      - name: log step
+        id: log
+        if: ${{ steps.git-setup.outputs.commits != '' }}
+        run: |
+          echo "### Summary" >> $GITHUB_STEP_SUMMARY
+          echo "OLD" >> $GITHUB_STEP_SUMMARY
+          echo "$COMMITS_OLD" >> $GITHUB_STEP_SUMMARY
+          echo "NEW" >> $GITHUB_STEP_SUMMARY
+          echo "$COMMITS_NEW" >> $GITHUB_STEP_SUMMARY
+
 
   deploy:
     needs: merge
