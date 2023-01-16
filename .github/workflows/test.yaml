@@ -34,7 +34,7 @@ jobs:
           echo "::set-output name=commits::$COMMITS_E"
           echo "::set-output name=commits_old::$COMMITS_E"
           echo "COMMITS_SUM<<EOF" >> $GITHUB_ENV
-          echo "$COMMITS" | sed "s/^\([[:alnum:]]\{7\}\)/* [\1](${COMMIT_URL//\//\\/}\/\1)/" >> $GITHUB_ENV
+          echo "$COMMITS" | sed "s/^\([[:alnum:]]\{7\}\)/* [\`\1\`](${COMMIT_URL//\//\\/}\/\1)/" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: important step
