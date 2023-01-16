@@ -30,10 +30,11 @@ jobs:
           LAST_STAGING_TS=$(git log -n 1 --pretty=format:"%h%x09%ct%x09%s" origin/staging | awk '{print $2}')
           COMMITS="$(git log --pretty=format:'%h%x09%cI%x09%s' --since=format:ct:$LAST_STAGING_TS origin/main)"
           COMMITS_E="${COMMITS//$'\n'/'%0A'}"
+          REPO_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
           echo "::set-output name=commits::$COMMITS_E"
           echo "::set-output name=commits_old::$COMMITS_E"
-          echo "COMMITS_NEW<<EOF" >> $GITHUB_ENV
-          echo "$COMMITS" | sed 's/^\(.\)/* \1/' >> $GITHUB_ENV
+          echo "COMMITS_SUM<<EOF" >> $GITHUB_ENV
+          echo "$COMMITS" | sed "s/^\([[:alnum:]]\{7\}\)/* [\1](${REPO_URL//\//\\/}\/\1)/" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: important step
@@ -43,7 +44,7 @@ jobs:
           COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
         run: |
           echo "This ran"
-          echo "new $COMMITS_NEW"
+          echo "new $COMMITS_SUM"
           echo "status=good" >> $GITHUB_OUTPUT
           git checkout staging
           git branch merge/staging
@@ -54,7 +55,7 @@ jobs:
           git checkout staging
           git checkout -b staging_new
           git merge --squash merge/staging
-          git commit -m "Automated release candidate NEW" -m "$COMMITS_NEW"
+          git commit -m "Automated release candidate NEW" -m "$COMMITS_SUM"
           git log -n 1
           git checkout staging
           git merge --squash merge/staging
@@ -68,7 +69,7 @@ jobs:
           COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
         run: |
           echo "### Summary $(git rev-parse --short HEAD)" >> $GITHUB_STEP_SUMMARY
-          echo "$COMMITS_NEW" >> $GITHUB_STEP_SUMMARY
+          echo "$COMMITS_SUM" >> $GITHUB_STEP_SUMMARY
 
   deploy:
     needs: merge
