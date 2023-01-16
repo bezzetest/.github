@@ -31,12 +31,14 @@ jobs:
           COMMITS="$(git log --pretty=format:'%h%x09%cI%x09%s' --since=format:ct:$LAST_STAGING_TS origin/main)"
           COMMITS="${COMMITS//$'\n'/'%0A'}"
           echo "::set-output name=commits::$COMMITS"
-          echo "::set-env name=commits_old::$COMMITS"
+          echo "::set-output name=commits_old::$COMMITS"
           echo "commits_new=$COMMITS" >> $GITHUB_ENV
 
       - name: important step
         id: important
         if: ${{ steps.git-setup.outputs.commits != '' }}
+        env:
+          COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
         run: |
           echo "This ran"
           echo "old $COMMITS_OLD"
@@ -61,13 +63,14 @@ jobs:
       - name: log step
         id: log
         if: ${{ steps.git-setup.outputs.commits != '' }}
+        env:
+          COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
         run: |
           echo "### Summary" >> $GITHUB_STEP_SUMMARY
           echo "OLD" >> $GITHUB_STEP_SUMMARY
           echo "$COMMITS_OLD" >> $GITHUB_STEP_SUMMARY
           echo "NEW" >> $GITHUB_STEP_SUMMARY
           echo "$COMMITS_NEW" >> $GITHUB_STEP_SUMMARY
-
 
   deploy:
     needs: merge
