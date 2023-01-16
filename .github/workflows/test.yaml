@@ -67,7 +67,7 @@ jobs:
         env:
           COMMITS_OLD: ${{ steps.git-setup.outputs.commits_old }}
         run: |
-          echo "### Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### Summary $(git rev-parse --short HEAD)" >> $GITHUB_STEP_SUMMARY
           echo "$COMMITS_NEW" >> $GITHUB_STEP_SUMMARY
 
   deploy:
